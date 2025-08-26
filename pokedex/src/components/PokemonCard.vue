@@ -45,7 +45,8 @@ const coresPorTipo = {
     electric: '#FAD85F',
     poison: '#B818D6',
     bug: '#90EE90',
-    normal: '#808080'
+    normal: '#808080',
+    ground: '#cda171'
 }
 
 const corFundo = computed(() => { 
@@ -91,7 +92,7 @@ onMounted(() => {
     justify-content: flex-start; /* tudo no topo */
     margin: 2px;
     height: 110px;
-    width: 96px;                /* largura maior para caber imagem */
+    max-width: 100%;                /* largura maior para caber imagem */
     border-radius: 15px;
     transition: all 0.1s ease;
 }

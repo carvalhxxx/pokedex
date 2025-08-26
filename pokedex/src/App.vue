@@ -1,8 +1,9 @@
 <template>
-  <h1>Pokédex</h1>
-  <input type="text" v-model="busca" placeholder="Digite o nome de um Pokemon"/>
-  <hr>
+
+  <!-- <input type="text" v-model="busca" placeholder="Digite o nome de um Pokemon"/> -->
+  <!-- <hr> -->
   <div class="pokedex-wrapper">
+      <img class="logo" src="/public/pokedex.png">
     <div class="lista">
       <PokemonCard
         v-for="pokemon in pokemonsFiltrados"
@@ -33,7 +34,7 @@ const pokemons = ref([])
 const busca = ref([])
 
 async function carregarPokemons() {
-  const res = await fetch('https://pokeapi.co/api/v2/pokemon?limit=25')
+  const res = await fetch('https://pokeapi.co/api/v2/pokemon?limit=35')
   const data = await res.json()
   pokemons.value = data.results
 }
@@ -78,12 +79,25 @@ function fecharModal() {
 body {
   display: block;
   font-family: 'Roboto', sans-serif;
+  margin: 0;
+  box-sizing: border-box;
+      background-color: #ca4a58;
+
+}
+
+#app {
+  /* padding: 1rem; */
+
+    margin: 0;
 }
 
 .pokedex-wrapper {
   width: 100%;
   display: block;
   text-align: left;
+  background-color: white;
+  border-radius: 15px;
+  padding: 1rem;
 }
 .pokedex-wrapper input {
     width: 100%;              /* ocupa toda a largura do container */
@@ -107,10 +121,9 @@ body {
 }
 
 .lista {
-  display: flex;
+  display: grid;
   flex-wrap: wrap;
-  justify-content: flex-start;
-  align-items: flex-start;
+  padding-top: 10px;
   /* width: 100%; */
 }
 h1 {
@@ -148,6 +161,13 @@ h1 {
   width: 150px;
   height: auto;
 }
+.logo {
+    width: 40%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0px 0px 10px 29%;
+}
 .modal-content p, h2 {
   text-transform: capitalize;
 }
@@ -163,5 +183,13 @@ h1 {
 }
 .modal-content .fechar:hover {
   color: #82caff;
+}
+
+@media screen and (min-width: 300px) {
+  .pokedex-wrapper {
+  max-width: 300px;
+  margin: 1rem auto;
+  border-radius: 1rem;
+  }
 }
 </style>
