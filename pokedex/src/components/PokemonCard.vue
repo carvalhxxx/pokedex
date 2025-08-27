@@ -3,7 +3,7 @@
     <h3>{{ pokemon.name }}</h3>
     <div class="tipos-e-imagem">
       <div class="tipos">
-        <span v-for="tipo in tipos" :key="tipo" class="tipo" :style="{ backgroundColor: corBorda, borderColor: corBorda}">
+        <span v-for="tipo in tipos" :key="tipo" class="tipo" :style="{ backgroundColor: corBorda, borderColor: corBorda,  boxShadow: '0 8px 20px rgba(0, 0, 0, 0.1)'}">
           {{ tipo }}
         </span>
       </div>
@@ -26,27 +26,56 @@ const props = defineProps({
 
 const tipos = ref([])
 const imagem = ref('')
+const stats = ref([])
+const moves = ref([])
+const evolucoes = ref([])
 
 async function carregarDetalhes() {
     const res = await fetch(props.pokemon.url)
     const data = await res.json()
+
     imagem.value = data.sprites.other['official-artwork']?.front_default || data.sprites.front_default || ''
     tipos.value = data.types.map(t => t.type.name)
+    stats.value = data.stats
+    moves.value = data.moves
 
-    console.log('Detalhes carregados:', props.pokemon.name, imagem.value)
-    console.log(tipos.value)
-    console.log(coresPorTipo[tipos.value])
+    // pegar evoluções
+    const resSpecies = await fetch(data.species.url)
+    const speciesData = await resSpecies.json()
+    const resEvol = await fetch(speciesData.evolution_chain.url)
+    const evolData = await resEvol.json()
+    evolucoes.value = processarEvolucoes(evolData.chain)
+}
+
+function processarEvolucoes(chain) {
+    const evols = []
+    function percorrer(c) {
+        evols.push(c.species.name)
+        c.evolves_to.forEach(e => percorrer(e))
+    }
+    percorrer(chain)
+    return evols
 }
 
 const coresPorTipo = {
-    fire: '#FA6161',
-    water: '#82CAFF',
-    grass: '#5EE0C1',
-    electric: '#FAD85F',
-    poison: '#B818D6',
-    bug: '#90EE90',
-    normal: '#808080',
-    ground: '#cda171'
+  normal:   '#A8A878', 
+  fire:     '#F08030', 
+  water:    '#6890F0', 
+  grass:    '#78C850', 
+  electric: '#F8D030', 
+  ice:      '#98D8D8', 
+  fighting: '#C03028', 
+  poison:   '#A040A0', 
+  ground:   '#E0C068', 
+  flying:   '#A890F0', 
+  psychic:  '#F85888', 
+  bug:      '#A8B820', 
+  rock:     '#B8A038', 
+  ghost:    '#705898',
+  dragon:   '#7038F8', 
+  dark:     '#705848', 
+  steel:    '#B8B8D0', 
+  fairy:    '#EE99AC' 
 }
 
 const corFundo = computed(() => { 
@@ -72,12 +101,21 @@ function escurecerCor(hex, percent) {
 
 const corBorda = computed(() => escurecerCor(corFundo.value, 20))
 
+
+
 const emit = defineEmits(['abrir-modal'])
 
 function abrirModal() {
-    emit('abrir-modal', {... props.pokemon, tipos: tipos.value, imagem: imagem.value})
+    emit('abrir-modal', { 
+        ...props.pokemon,
+        tipos: tipos.value,
+        imagem: imagem.value,
+        cor: corFundo.value,
+        stats: stats.value,
+        moves: moves.value,
+        evolucoes: evolucoes.value
+    })
 }
-
 onMounted(() => {
     carregarDetalhes()
 })
@@ -95,6 +133,22 @@ onMounted(() => {
     max-width: 100%;                /* largura maior para caber imagem */
     border-radius: 15px;
     transition: all 0.1s ease;
+    position: relative;
+    overflow: hidden;
+    width: 25vh;
+}
+.pokemon-card::before {
+    content: "";
+    position: absolute;
+    top: -3px;
+    right: -42px;
+    width: 230px;
+    height: 207px;
+    background-image: url(/pokebola.png);
+    background-size: contain;
+    background-repeat: no-repeat;
+    opacity: 0.3;
+    z-index: 0;        /* fica atrás */
 }
 .tipos-e-imagem {
     display: flex;
@@ -128,18 +182,28 @@ onMounted(() => {
     cursor: pointer;
 }
 .pokemon-card img {
-    width: 45px;
-    height: 45px;
+    width: 100px;
+    height: 108px;
     object-fit: contain;
+    position: relative;
+    display: flex;
+    max-width: 100%;
+    max-height: 90%;
+    align-self: flex-end;
+    top: -50px;
 }
 .pokemon-card h3 {
     text-transform: capitalize;
     color: white;
-    font-size: 12px;
+    font-size: 22px;
     margin: 0 0 25px 0;
 }
 p {
     border: 1px solid gray;
     border-radius: 5px;
 }
+.pokebola {
+    z-index: 0;
+}
+
 </style>

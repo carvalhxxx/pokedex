@@ -14,14 +14,53 @@
     </div>
   </div>
 
-  <div v-if="pokemonSelecionado" class="modal-overlay" @click.self="fecharModal">
-    <div class="modal-content" :class="{ aberto: modalAtivo }">
-      <span class="fechar" @click="fecharModal"><i class="fas fa-arrow-left"></i></span>
-      <h2>{{ pokemonSelecionado.name }}</h2>
-      <img :src="pokemonSelecionado.imagem" :alt="pokemonSelecionado.name"/>
-      <p>{{ pokemonSelecionado.tipos.join (',') }}</p>
+<div v-if="pokemonSelecionado" class="modal-overlay" @click.self="fecharModal">
+  <div class="modal-content" :class="{ aberto: modalAtivo }" :style="{ backgroundColor: pokemonSelecionado.cor }">
+    <span class="fechar" @click="fecharModal"><i class="fas fa-arrow-left"></i></span>
+    <h2>{{ pokemonSelecionado.name }}</h2>
+    <img :src="pokemonSelecionado.imagem" :alt="pokemonSelecionado.name"/>
+    <p class="tipo-modal">{{ pokemonSelecionado.tipos.join(', ') }}</p>
+
+    <div class="infos-modal">
+      <div class="tabs">
+        <button :class="{ ativa: abaAtiva === 'sobre' }" @click="abaAtiva = 'sobre'">Sobre</button>
+        <button :class="{ ativa: abaAtiva === 'stats' }" @click="abaAtiva = 'stats'">Base Stats</button>
+        <button :class="{ ativa: abaAtiva === 'evolution' }" @click="abaAtiva = 'evolution'">Evoluções</button>
+        <button :class="{ ativa: abaAtiva === 'moves' }" @click="abaAtiva = 'moves'">Moves</button>
+      </div>
+
+      <!-- Conteúdo das abas -->
+      <div v-if="abaAtiva === 'sobre'">
+        <!-- aqui mantém o conteúdo que você já tinha -->
+      </div>
+
+      <div v-if="abaAtiva === 'stats'">
+        <ul>
+          <li v-for="s in pokemonSelecionado.stats" :key="s.stat.name">
+            {{ s.stat.name }}: {{ s.base_stat }}
+          </li>
+        </ul>
+      </div>
+
+      <div v-if="abaAtiva === 'moves'">
+        <ul>
+          <li v-for="m in pokemonSelecionado.moves" :key="m.move.name">
+            {{ m.move.name }}
+          </li>
+        </ul>
+      </div>
+
+      <div v-if="abaAtiva === 'evolution'">
+        <ul>
+          <li v-for="e in pokemonSelecionado.evolucoes" :key="e">
+            {{ e }}
+          </li>
+        </ul>
+      </div>
     </div>
   </div>
+</div>
+
 
 </template>
 
@@ -70,6 +109,8 @@ function fecharModal() {
         document.body.style.overflow = ''
   }, 500)
 }
+
+const abaAtiva = ref('sobre');
 
 
 </script>
@@ -125,6 +166,8 @@ body {
   flex-wrap: wrap;
   padding-top: 10px;
   /* width: 100%; */
+  justify-content: center;
+    align-content: center;
 }
 h1 {
   text-align: left;
@@ -143,13 +186,10 @@ h1 {
 .modal-content {
   position: relative;
   background: white;
-  border-radius: 20px 20px 0 0;
-  padding: 20px;
-  max-height: 90vh;
-  height: 80vh;
+  max-height: 100vh;
+  height: 100vh;
   width: 100%;
   text-align: center;
-
   transform: translateY(100%);
   transition: transform 0.5s ease-out;
 
@@ -158,7 +198,7 @@ h1 {
   transform: translateY(0);
 }
 .modal-content img {
-  width: 150px;
+  width: 250px;
   height: auto;
 }
 .logo {
@@ -170,13 +210,15 @@ h1 {
 }
 .modal-content p, h2 {
   text-transform: capitalize;
+  position: relative;
+  top: 10px;
 }
 .modal-content button {
   align-items: flex-end;
 }
 .modal-content .fechar {
   position: absolute;
-  top: 30px;
+  top: 35px;
   left: 20px;
   cursor: pointer;
   z-index: 10;
@@ -184,12 +226,58 @@ h1 {
 .modal-content .fechar:hover {
   color: #82caff;
 }
-
+.infos-modal {
+  background-color: white;
+  height: 100%;
+  border-radius: 25px;
+}
+.tabs {
+  display: flex;
+  justify-content: space-around;
+  margin-top: 15px;
+  border-bottom: none;
+  padding-top: 30px;
+}
+.tabs button {
+  background: none;
+  border: none;
+  padding: 10px 15px;
+  cursor: pointer;
+  font-weight: bold;
+  color: #555;
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.2s;
+  border-radius: 0;
+}
+.tabs button.ativa {
+  border-bottom: 2px solid #333 ;
+  color: #000;
+}
 @media screen and (min-width: 300px) {
   .pokedex-wrapper {
   max-width: 300px;
-  margin: 1rem auto;
+  margin: -1rem auto;
   border-radius: 1rem;
+  }
+}
+@media screen and (min-width: 550px) {
+    .pokedex-wrapper {
+  max-width: 550px;
+  margin: -1rem auto;
+  border-radius: 1rem;
+  }
+  .lista {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+@media screen and (min-width: 750px) {
+    .pokedex-wrapper {
+  max-width: 750px;
+  margin: -1rem auto;
+  border-radius: 1rem;
+  }
+  .lista {
+    grid-template-columns: 1fr 1fr 1fr;
   }
 }
 </style>
