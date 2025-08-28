@@ -12,6 +12,7 @@
         @abrir-modal="abrirModal"
       />
     </div>
+    <button @click="carregarMais" class="btn-carregar-mais">Carregar Mais</button>
   </div>
 
 <div v-if="pokemonSelecionado" class="modal-overlay" @click.self="fecharModal">
@@ -23,29 +24,29 @@
 
     <div class="infos-modal">
       <div class="tabs">
-        <button :class="{ ativa: abaAtiva === 'sobre' }" @click="abaAtiva = 'sobre'">Sobre</button>
-        <button :class="{ ativa: abaAtiva === 'stats' }" @click="abaAtiva = 'stats'">Base Stats</button>
-        <button :class="{ ativa: abaAtiva === 'evolution' }" @click="abaAtiva = 'evolution'">Evoluções</button>
-        <button :class="{ ativa: abaAtiva === 'moves' }" @click="abaAtiva = 'moves'">Moves</button>
+        <button :class="{ ativa: abaAtiva === 'sobre' }" @click="abaAtiva = 'sobre'" :style="{ borderBottomColor: abaAtiva === 'sobre' ? pokemonSelecionado?.cor : '' }" >Sobre</button>
+        <button :class="{ ativa: abaAtiva === 'stats' }" @click="abaAtiva = 'stats'" :style="{ borderBottomColor: abaAtiva === 'stats' ? pokemonSelecionado?.cor : '' }">Base Stats</button>
+        <button :class="{ ativa: abaAtiva === 'evolution' }" @click="abaAtiva = 'evolution'" :style="{ borderBottomColor: abaAtiva === 'evolution' ? pokemonSelecionado?.cor : '' }">Evoluções</button>
       </div>
 
       <!-- Conteúdo das abas -->
-      <div v-if="abaAtiva === 'sobre'">
-        <!-- aqui mantém o conteúdo que você já tinha -->
+      <div v-if="abaAtiva === 'sobre'" >
+        <p>Altura: {{ pokemonSelecionado.weight / 10 }} m</p>
+          <p><strong>Peso:</strong> {{ pokemonSelecionado.weight / 10 }} kg</p>
+            <p><strong>Tipos:</strong> {{ pokemonSelecionado.tipos.join(', ') }}</p>
+        <p><strong>Habilidades:</strong> {{ pokemonSelecionado.abilities.map(a => a.ability.name).join(', ') }}</p>
+        <p><strong>Experiência Base:</strong> {{ pokemonSelecionado.base_experience }}</p>
+        <p><strong>Descrição:</strong> {{ pokemonSelecionado.descricao }}</p> 
       </div>
 
       <div v-if="abaAtiva === 'stats'">
         <ul>
-          <li v-for="s in pokemonSelecionado.stats" :key="s.stat.name">
-            {{ s.stat.name }}: {{ s.base_stat }}
-          </li>
-        </ul>
-      </div>
-
-      <div v-if="abaAtiva === 'moves'">
-        <ul>
-          <li v-for="m in pokemonSelecionado.moves" :key="m.move.name">
-            {{ m.move.name }}
+          <li v-for="s in pokemonSelecionado.stats" :key="s.stat.name" class="stat-item">
+            <span class="stat-name"> {{ statAbreviaturas[s.stat.name] || s.stat.name }}: </span>
+            <span class="stat-value">{{ s.base_stat }} </span>
+            <div class="progress-bar">
+              <div class="progress-fill" :style="{ width: (s.base_stat / 255 * 100) + '%', backgroundColor: pokemonSelecionado.cor}"></div>
+            </div>
           </li>
         </ul>
       </div>
@@ -70,12 +71,15 @@ import '@fortawesome/fontawesome-free/css/all.css'
 import PokemonCard from './components/PokemonCard.vue'
 
 const pokemons = ref([])
+let offset = 0
+const limit = 35
 const busca = ref([])
 
 async function carregarPokemons() {
-  const res = await fetch('https://pokeapi.co/api/v2/pokemon?limit=35')
+  const res = await fetch(`https://pokeapi.co/api/v2/pokemon?limit=${limit}&offset=${offset}`)
   const data = await res.json()
-  pokemons.value = data.results
+  pokemons.value.push(...data.results)
+  offset += limit
 }
 
 onMounted(() => {
@@ -92,15 +96,110 @@ const pokemonsFiltrados = computed(() => {
 const pokemonSelecionado = ref(null)
 const modalAtivo = ref(false)
 
-function abrirModal(pokemon) {
-  pokemonSelecionado.value = pokemon
-  nextTick(() => {
-    setTimeout(() => {
-    modalAtivo.value = true
-    document.body.style.overflow = 'hidden'
-    }, 10)
-  })
+// async function abrirModal(pokemon) {
+//   try {
+//     const res = await fetch(pokemon.url)
+//     const data = await  res.json()
+
+//     const speciesRes = await fetch(data.species.url)
+//     const speciesData = await speciesRes.json()
+
+//     const descricao = speciesData.flavor_text_entries.find(
+//       entry => entry.language.name === 'en'
+//     )?.flavor_text.replace(/\n|\f/g, '') || ''
+
+//     const evolucoesRes = await fetch(speciesData.evolution_chain.url)
+//     const evolucoesData = await evolucoesRes.json()
+
+//     function extrairEvolucoes(chain) {
+//       const nomes = [chain.species.name]
+//       if (chain.evolves_to.length > 0) {
+//         chain.evolves_to.forEach(e => nomes.push(...extrairEvolucoes(e)))
+//       }
+//       return nomes
+//     }
+//     const evolucoes = extrairEvolucoes(evolucoesData.chain)
+
+//     pokemonSelecionado.value = {
+//       ...data,
+//       tipos: data.types.map(t => t.type.name),
+//       abilities: data.abilities,
+//       evolucoes,
+//       descricao,
+//        imagem: data.sprites.other['official-artwork'].front_default || data.sprites.front_default,
+//        cor : corFundo.value
+//     }
+
+//     nextTick(() => {
+//       setTimeout(() => {
+//         modalAtivo.value = true
+//         document.body.style.overflow = 'hidden'
+//       }, 10)
+//     })
+//   } catch (err) {
+//     console.error('Erro ao abrir modal do Pokémon:', err)
+//   }
+// }
+
+// function abrirModal(pokemonCompleto) {
+//   // pokemonCompleto já tem cor, imagem, stats, evoluções
+//   pokemonSelecionado.value = pokemonCompleto
+
+//   nextTick(() => {
+//     setTimeout(() => {
+//       modalAtivo.value = true
+//       document.body.style.overflow = 'hidden'
+//     }, 10)
+//   })
+// }
+
+async function abrirModal(pokemon) {
+  try {
+    const res = await fetch(pokemon.url)
+    const data = await res.json()
+
+    const speciesRes = await fetch(data.species.url)
+    const speciesData = await speciesRes.json()
+
+    const descricao = speciesData.flavor_text_entries.find(
+      entry => entry.language.name === 'en'
+    )?.flavor_text.replace(/\n|\f/g, '') || ''
+
+    const evolucoesRes = await fetch(speciesData.evolution_chain.url)
+    const evolucoesData = await evolucoesRes.json()
+
+    function extrairEvolucoes(chain) {
+      const nomes = [chain.species.name]
+      if (chain.evolves_to.length > 0) {
+        chain.evolves_to.forEach(e => nomes.push(...extrairEvolucoes(e)))
+      }
+      return nomes
+    }
+    const evolucoes = extrairEvolucoes(evolucoesData.chain)
+
+    // Mantendo a cor que veio do card
+    pokemonSelecionado.value = {
+      ...data,
+      tipos: data.types.map(t => t.type.name),
+      abilities: data.abilities,
+      evolucoes,
+      descricao,
+      imagem: data.sprites.other['official-artwork'].front_default || data.sprites.front_default,
+      cor: pokemon.cor  // <- usa a cor que veio do card
+    }
+
+    nextTick(() => {
+      setTimeout(() => {
+        modalAtivo.value = true
+        document.body.style.overflow = 'hidden'
+      }, 10)
+    })
+  } catch (err) {
+    console.error('Erro ao abrir modal do Pokémon:', err)
+  }
 }
+
+
 
 function fecharModal() {
   modalAtivo.value = false
@@ -112,6 +211,18 @@ function fecharModal() {
 
 const abaAtiva = ref('sobre');
 
+const statAbreviaturas = {
+  hp: 'HP',
+  attack: 'Attack',
+  defense: 'Defense',
+  'special-attack': 'SP. Attack',
+  'special-defense': 'SP. Defense',
+  speed: 'Speed'
+}
+
+function carregarMais() {
+  carregarPokemons()
+}
 
 </script>
 
@@ -139,6 +250,7 @@ body {
   background-color: white;
   border-radius: 15px;
   padding: 1rem;
+    max-width: 1250px; /* limite máximo opcional */
 }
 .pokedex-wrapper input {
     width: 100%;              /* ocupa toda a largura do container */
@@ -168,6 +280,7 @@ body {
   /* width: 100%; */
   justify-content: center;
     align-content: center;
+    
 }
 h1 {
   text-align: left;
@@ -253,6 +366,51 @@ h1 {
   border-bottom: 2px solid #333 ;
   color: #000;
 }
+.stat-item {
+  margin: 40px 0;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+}
+.stat-name {
+  display: inline-block;
+  width: 90px;
+  text-transform: capitalize;
+  font-weight: bold;
+  text-align: left;
+}
+.stat-value {
+  width: 35px;
+  text-align: left;
+}
+.progress-bar {
+  display: inline-block;
+  vertical-align: middle;
+  width: 220px;
+  height: 10px;
+  background: #eee;
+  border-radius: 5px;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  transition: width 0.3 ease;
+}
+.btn-carregar-mais {
+  margin: 10px auto;
+  display: block;
+  padding: 10px 20px;
+  border-radius: 12px;
+  background-color: #82CAFF;
+  border: none;
+  font-weight: bold;
+  cursor: pointer;
+}
+.btn-carregar-mais:hover {
+  background-color: #4fa3e0;
+}
 @media screen and (min-width: 300px) {
   .pokedex-wrapper {
   max-width: 300px;
@@ -262,7 +420,7 @@ h1 {
 }
 @media screen and (min-width: 550px) {
     .pokedex-wrapper {
-  max-width: 550px;
+  max-width: 650px;
   margin: -1rem auto;
   border-radius: 1rem;
   }
@@ -272,12 +430,23 @@ h1 {
 }
 @media screen and (min-width: 750px) {
     .pokedex-wrapper {
-  max-width: 750px;
+  max-width: 950px;
   margin: -1rem auto;
   border-radius: 1rem;
   }
   .lista {
     grid-template-columns: 1fr 1fr 1fr;
   }
+  
+}
+@media screen and (min-width: 1250px) {
+    .pokedex-wrapper {
+  max-width: 1250px;
+  margin: -1rem auto;
+  border-radius: 1rem;
+  }
+  .lista {
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+  } 
 }
 </style>
