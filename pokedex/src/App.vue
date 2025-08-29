@@ -4,6 +4,19 @@
   <!-- <hr> -->
   <div class="pokedex-wrapper">
       <img class="logo" src="/public/pokedex.png">
+        <div class="filtro-tipos">
+          <span 
+            v-for="tipo in Object.keys(coresPorTipo)" 
+            :key="tipo"
+            class="tipo-icone"
+            :style="{ backgroundColor: coresPorTipo[tipo] }"
+            @click="tipoSelecionado = (tipoSelecionado === tipo ? null : tipo)"
+            :class="{ativo: tipoSelecionado === true}"
+          >
+            <img :src="iconesPorTipo[tipo]" :alt="tipo" class="icone-tipo" />
+          </span>
+        </div>
+
     <div class="lista">
       <PokemonCard
         v-for="pokemon in pokemonsFiltrados"
@@ -54,20 +67,31 @@
                 :style="{ borderBottomColor: abaAtiva === 'evolution' ? pokemonSelecionado?.cor : '' }">Evoluções</button>
       </div>
 
-      <!-- Conteúdo das abas -->
-      <div class="about" v-if="abaAtiva === 'sobre'" >
-        <p><strong>Altura:</strong> {{ pokemonSelecionado.height / 10 }} m</p>
-        <p><strong>Peso:</strong> {{ pokemonSelecionado.weight / 10 }} kg</p>
-        <p><strong>Tipos:</strong> {{ pokemonSelecionado.tipos.join(', ') }}</p>
-        <p><strong>Habilidades:</strong> {{ pokemonSelecionado.abilities.map(a => a.ability.name).join(', ') }}</p>
-        <p><strong>Experiência Base:</strong> {{ pokemonSelecionado.base_experience }}</p>
-        <p><strong>Descrição:</strong> {{ pokemonSelecionado.descricao }}</p> 
+      <div class="about" v-if="abaAtiva === 'sobre'">
+        <div class="linha">
+          <span class="titulo">Altura:</span>
+          <span class="valor">{{ pokemonSelecionado.height / 10 }} m</span>
+        </div>
+        <div class="linha">
+          <span class="titulo">Peso:</span>
+          <span class="valor">{{ pokemonSelecionado.weight / 10 }} kg</span>
+        </div>
+        <div class="linha">
+          <span class="titulo">Tipos:</span>
+          <span class="valor">{{ pokemonSelecionado.tipos.join(', ') }}</span>
+        </div>
+        <div class="linha">
+          <span class="titulo">Habilidades:</span>
+          <span class="valor">{{ pokemonSelecionado.abilities.map(a => a.ability.name).join(', ') }}</span>
+        </div>
       </div>
+
+
 
       <div v-if="abaAtiva === 'stats'">
         <ul>
           <li v-for="s in pokemonSelecionado.stats" :key="s.stat.name" class="stat-item">
-            <span class="stat-name"> {{ statAbreviaturas[s.stat.name] || s.stat.name }}: </span>
+            <span class="stat-name" :style=" { color: pokemonSelecionado.cor}"> {{ statAbreviaturas[s.stat.name] || s.stat.name }}: </span>
             <span class="stat-value">{{ s.base_stat }} </span>
             <div class="progress-bar">
               <div class="progress-fill" :style="{ width: (s.base_stat / 255 * 100) + '%', backgroundColor: pokemonSelecionado.cor}"></div>
@@ -91,19 +115,53 @@
 </template>
 
 <script setup>
-import { onMounted, ref, computed, nextTick, watch } from 'vue'
+import { onMounted, ref, computed, nextTick } from 'vue'
 import '@fortawesome/fontawesome-free/css/all.css'
 import PokemonCard from './components/PokemonCard.vue'
 
 const pokemons = ref([])
 let offset = 0
 const limit = 35
-const busca = ref([])
+const busca = ref('')  // string para filtro por nome
+const tipoSelecionado = ref(null) // tipo selecionado na barra
+
+const coresPorTipo = {
+  normal: '#A8A878',
+  fire: '#F08030',
+  water: '#6890F0',
+  grass: '#78C850',
+  electric: '#F8D030',
+  ice: '#98D8D8',
+  fighting: '#C03028',
+  poison: '#A040A0',
+  ground: '#E0C068',
+  flying: '#A890F0',
+  psychic: '#F85888',
+  bug: '#A8B820',
+  rock: '#B8A038',
+  ghost: '#705898',
+  dragon: '#7038F8',
+  dark: '#705848',
+  steel: '#B8B8D0',
+  fairy: '#EE99AC'
+}
 
 async function carregarPokemons() {
   const res = await fetch(`https://pokeapi.co/api/v2/pokemon?limit=${limit}&offset=${offset}`)
   const data = await res.json()
-  pokemons.value.push(...data.results)
+  // Cada Pokémon agora carrega também os tipos
+  const detalhesPromises = data.results.map(async p => {
+    const resDetalhes = await fetch(p.url)
+    const detalhes = await resDetalhes.json()
+    return {
+      ...p,
+      types: detalhes.types.map(t => t.type.name),
+      cor: coresPorTipo[detalhes.types[0].type.name], // primeira cor do tipo
+      corBorda: coresPorTipo[detalhes.types[0].type.name]
+    }
+  })
+  const pokemonsComTipos = await Promise.all(detalhesPromises)
+  pokemons.value.push(...pokemonsComTipos)
   offset += limit
 }
 
@@ -111,88 +169,44 @@ onMounted(() => {
   carregarPokemons()
 })
 
+// Filtro de Pokémon por nome + tipo
 const pokemonsFiltrados = computed(() => {
-  const termo = String(busca.value || '').toLowerCase() // garante string
-  return pokemons.value.filter(p =>
-    p.name.toLowerCase().includes(termo)
-  )
+  const termo = String(busca.value || '').toLowerCase()
+  return pokemons.value.filter(p => {
+    const matchesNome = p.name.toLowerCase().includes(termo)
+    const matchesTipo = tipoSelecionado.value
+      ? p.types?.some(t => t === tipoSelecionado.value)
+      : true
+    return matchesNome && matchesTipo
+  })
 })
 
+// Modal e abas (mantido igual)
 const pokemonSelecionado = ref(null)
 const modalAtivo = ref(false)
+const abaAtiva = ref('sobre')
 
-// async function abrirModal(pokemon) {
-//   try {
-//     const res = await fetch(pokemon.url)
-//     const data = await  res.json()
-
-//     const speciesRes = await fetch(data.species.url)
-//     const speciesData = await speciesRes.json()
-
-//     const descricao = speciesData.flavor_text_entries.find(
-//       entry => entry.language.name === 'en'
-//     )?.flavor_text.replace(/\n|\f/g, '') || ''
-
-//     const evolucoesRes = await fetch(speciesData.evolution_chain.url)
-//     const evolucoesData = await evolucoesRes.json()
-
-//     function extrairEvolucoes(chain) {
-//       const nomes = [chain.species.name]
-//       if (chain.evolves_to.length > 0) {
-//         chain.evolves_to.forEach(e => nomes.push(...extrairEvolucoes(e)))
-//       }
-//       return nomes
-//     }
-//     const evolucoes = extrairEvolucoes(evolucoesData.chain)
-
-//     pokemonSelecionado.value = {
-//       ...data,
-//       tipos: data.types.map(t => t.type.name),
-//       abilities: data.abilities,
-//       evolucoes,
-//       descricao,
-//        imagem: data.sprites.other['official-artwork'].front_default || data.sprites.front_default,
-//        cor : corFundo.value
-//     }
-
-//     nextTick(() => {
-//       setTimeout(() => {
-//         modalAtivo.value = true
-//         document.body.style.overflow = 'hidden'
-//       }, 10)
-//     })
-//   } catch (err) {
-//     console.error('Erro ao abrir modal do Pokémon:', err)
-//   }
-// }
-
-// function abrirModal(pokemonCompleto) {
-//   // pokemonCompleto já tem cor, imagem, stats, evoluções
-//   pokemonSelecionado.value = pokemonCompleto
-
-//   nextTick(() => {
-//     setTimeout(() => {
-//       modalAtivo.value = true
-//       document.body.style.overflow = 'hidden'
-//     }, 10)
-//   })
-// }
+const statAbreviaturas = {
+  hp: 'HP',
+  attack: 'ATK',
+  defense: 'DEF',
+  'special-attack': 'SATK',
+  'special-defense': 'SDEF',
+  speed: 'SPD'
+}
 
 async function abrirModal(pokemon) {
   try {
     const res = await fetch(pokemon.url)
     const data = await res.json()
-
     const speciesRes = await fetch(data.species.url)
     const speciesData = await speciesRes.json()
-
     const descricao = speciesData.flavor_text_entries.find(
       entry => entry.language.name === 'en'
     )?.flavor_text.replace(/\n|\f/g, '') || ''
 
     const evolucoesRes = await fetch(speciesData.evolution_chain.url)
     const evolucoesData = await evolucoesRes.json()
-
     function extrairEvolucoes(chain) {
       const nomes = [chain.species.name]
       if (chain.evolves_to.length > 0) {
@@ -202,7 +216,6 @@ async function abrirModal(pokemon) {
     }
     const evolucoes = extrairEvolucoes(evolucoesData.chain)
 
-    // Mantendo a cor que veio do card
     pokemonSelecionado.value = {
       ...data,
       tipos: data.types.map(t => t.type.name),
@@ -211,7 +224,7 @@ async function abrirModal(pokemon) {
       descricao,
       imagem: data.sprites.other['official-artwork'].front_default || data.sprites.front_default,
       cor: pokemon.cor,
-      corBorda: pokemon.corBorda  // <- usa a cor que veio do card
+      corBorda: pokemon.corBorda
     }
 
     nextTick(() => {
@@ -225,32 +238,41 @@ async function abrirModal(pokemon) {
   }
 }
 
-
-
 function fecharModal() {
   modalAtivo.value = false
   setTimeout(() => {
     pokemonSelecionado.value = null
-        document.body.style.overflow = ''
+    document.body.style.overflow = ''
   }, 500)
-}
-
-const abaAtiva = ref('sobre');
-
-const statAbreviaturas = {
-  hp: 'HP',
-  attack: 'Attack',
-  defense: 'Defense',
-  'special-attack': 'SP. Attack',
-  'special-defense': 'SP. Defense',
-  speed: 'Speed'
 }
 
 function carregarMais() {
   carregarPokemons()
 }
 
+const iconesPorTipo = {
+  normal: '/tipos/normal.svg',
+  fire: '/tipos/fire.svg',
+  water: '/tipos/water.svg',
+  grass: '/tipos/grass.svg',
+  electric: '/tipos/electric.svg',
+  ice: '/tipos/ice.svg',
+  fighting: '/tipos/fighting.svg',
+  poison: '/tipos/poison.svg',
+  ground: '/tipos/ground.svg',
+  flying: '/tipos/flying.svg',
+  psychic: '/tipos/psychic.svg',
+  bug: '/tipos/bug.svg',
+  rock: '/tipos/rock.svg',
+  ghost: '/tipos/ghost.svg',
+  dragon: '/tipos/dragon.svg',
+  dark: '/tipos/dark.svg',
+  steel: '/tipos/steel.svg',
+  fairy: '/tipos/fairy.svg'
+}
+
 </script>
+
 
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
@@ -258,8 +280,10 @@ body {
   display: block;
   font-family: 'Roboto', sans-serif;
   margin: 0;
-  box-sizing: border-box;
-      background-color: #ca4a58;
+  box-sizing: border-box; 
+  background: radial-gradient(circle at top left, #fbcb33, transparent 60%),
+              radial-gradient(circle at bottom right, #3b4cca, transparent 60%),
+              #111;
 
 }
 
@@ -326,7 +350,7 @@ h1 {
   position: relative;
   background: white;
   max-height: 100vh;
-  height: 100vh;
+  height: 75vh;
   width: 100%;
   text-align: center;
   transform: translateY(100%);
@@ -369,9 +393,13 @@ h1 {
 }
 .infos-modal {
   background-color: white;
-  height: 100%;
+  height: 100%;        /* já está */
   border-radius: 25px;
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
 }
+
 .tabs {
   display: flex;
   justify-content: space-around;
@@ -450,6 +478,7 @@ h1 {
   justify-content: center;
   gap: 8px;
   margin-top: 10px;
+  border-radius: 25px;
 }
 .tipos-modal .tipo {
   border: 1px solid white;
@@ -460,21 +489,81 @@ h1 {
   text-align: center;
   color: white;
 }
+
 .about {
-  text-align: left;
+  flex: 1;             /* ocupa todo o espaço disponível */
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
   padding-left: 40px;
+  overflow-y: auto;    /* se houver muito conteúdo, aparece scroll */
+      margin-top: 16px; 
 }
 
-@media screen and (min-width: 300px) {
+.linha {
+  display: grid;
+  grid-template-columns: 150px auto; /* aumentei a largura da coluna do título */
+  align-items: start;
+  gap: 10px; /* 👈 espaço extra entre colunas */
+}
+
+.titulo {
+
+  text-align: left;
+}
+
+.valor {
+  text-align: left;
+    font-weight: 500;
+    grid-template-columns: 200px auto;
+}
+
+.filtro-tipos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 20px 0;
+  justify-content: center;
+}
+
+.tipo-icone {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #f0f0f0; /* fundo neutro */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.2s, background 0.2s;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.tipo-icone img {
+  width: 24px;
+  height: 24px;
+}
+
+.tipo-icone:hover {
+  transform: scale(1.1);
+  background: #e0e0e0;
+}
+
+.tipo-icone.ativo {
+  background: #ffcc00; /* destaque quando selecionado */
+  transform: scale(1.2);
+}
+
+@media screen and (min-width: 320px) {
   .pokedex-wrapper {
-  max-width: 300px;
+  max-width: 220px;
   margin: -1rem auto;
   border-radius: 1rem;
   }
 }
-@media screen and (min-width: 550px) {
+@media screen and (min-width: 420px) {
     .pokedex-wrapper {
-  max-width: 650px;
+  max-width: 320px;
   margin: -1rem auto;
   border-radius: 1rem;
   }
@@ -482,9 +571,9 @@ h1 {
     grid-template-columns: 1fr 1fr;
   }
 }
-@media screen and (min-width: 850px) {
+@media screen and (min-width: 768px) {
     .pokedex-wrapper {
-  max-width: 950px;
+  max-width: 668px;
   margin: -1rem auto;
   border-radius: 1rem;
   }
