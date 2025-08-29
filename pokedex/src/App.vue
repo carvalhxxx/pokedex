@@ -67,21 +67,21 @@
                 :style="{ borderBottomColor: abaAtiva === 'evolution' ? pokemonSelecionado?.cor : '' }">Evoluções</button>
       </div>
 
-      <div class="about" v-if="abaAtiva === 'sobre'">
-        <div class="linha">
-          <span class="titulo">Altura:</span>
+      <div class="about" v-if="abaAtiva === 'sobre'" >
+        <div class="linha" >
+          <span class="titulo" :style="{ color: pokemonSelecionado.cor}">Altura:</span>
           <span class="valor">{{ pokemonSelecionado.height / 10 }} m</span>
         </div>
-        <div class="linha">
-          <span class="titulo">Peso:</span>
+        <div class="linha" >
+          <span class="titulo" :style="{ color: pokemonSelecionado.cor}">Peso:</span>
           <span class="valor">{{ pokemonSelecionado.weight / 10 }} kg</span>
         </div>
         <div class="linha">
-          <span class="titulo">Tipos:</span>
+          <span class="titulo" :style="{ color: pokemonSelecionado.cor}">Tipos:</span>
           <span class="valor">{{ pokemonSelecionado.tipos.join(', ') }}</span>
         </div>
         <div class="linha">
-          <span class="titulo">Habilidades:</span>
+          <span class="titulo" :style="{ color: pokemonSelecionado.cor}">Habilidades:</span>
           <span class="valor">{{ pokemonSelecionado.abilities.map(a => a.ability.name).join(', ') }}</span>
         </div>
       </div>
@@ -434,7 +434,7 @@ h1 {
 }
 .stat-name {
   display: inline-block;
-  width: 90px;
+  width: 45px;
   text-transform: capitalize;
   font-weight: bold;
   text-align: left;
@@ -494,7 +494,7 @@ h1 {
   flex: 1;             /* ocupa todo o espaço disponível */
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 25px;
   padding-left: 40px;
   overflow-y: auto;    /* se houver muito conteúdo, aparece scroll */
       margin-top: 16px; 
@@ -502,7 +502,7 @@ h1 {
 
 .linha {
   display: grid;
-  grid-template-columns: 150px auto; /* aumentei a largura da coluna do título */
+  grid-template-columns: 100px auto; /* aumentei a largura da coluna do título */
   align-items: start;
   gap: 10px; /* 👈 espaço extra entre colunas */
 }
@@ -510,12 +510,15 @@ h1 {
 .titulo {
 
   text-align: left;
+  text-transform: uppercase;
+  font-weight: bold;
 }
 
 .valor {
   text-align: left;
     font-weight: 500;
     grid-template-columns: 200px auto;
+    text-transform: capitalize;
 }
 
 .filtro-tipos {
