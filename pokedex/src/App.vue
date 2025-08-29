@@ -610,4 +610,12 @@ h1 {
     max-width: 85%;
   }
 }
+@media (max-width: 600px) {
+  .modal-content {
+    width: 95%;
+    max-height: 90vh;
+    padding: 15px;
+  }
+}
+
 </style>
