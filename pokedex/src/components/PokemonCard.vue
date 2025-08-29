@@ -111,6 +111,7 @@ function abrirModal() {
         tipos: tipos.value,
         imagem: imagem.value,
         cor: corFundo.value,
+        corBorda: corBorda.value,
         stats: stats.value,
         moves: moves.value,
         evolucoes: evolucoes.value
@@ -135,7 +136,6 @@ onMounted(() => {
     transition: all 0.1s ease;
     position: relative;
     overflow: hidden;
-    width: 25vh;
 }
 .pokemon-card::before {
     content: "";

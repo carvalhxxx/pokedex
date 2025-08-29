@@ -18,22 +18,47 @@
 <div v-if="pokemonSelecionado" class="modal-overlay" @click.self="fecharModal">
   <div class="modal-content" :class="{ aberto: modalAtivo }" :style="{ backgroundColor: pokemonSelecionado.cor }">
     <span class="fechar" @click="fecharModal"><i class="fas fa-arrow-left"></i></span>
-    <h2>{{ pokemonSelecionado.name }}</h2>
-    <img :src="pokemonSelecionado.imagem" :alt="pokemonSelecionado.name"/>
-    <p class="tipo-modal">{{ pokemonSelecionado.tipos.join(', ') }}</p>
+
+    <!-- Nome do Pokémon -->
+    <h2 class="nome-pokemon">{{ pokemonSelecionado.name }}</h2>
+
+    <!-- Tipos abaixo do nome -->
+    <div class="tipos-modal">
+      <span v-for="tipo in pokemonSelecionado.tipos" 
+            :key="tipo"
+            class="tipo"
+            :style="{
+              backgroundColor: pokemonSelecionado.corBorda,
+              borderColor: pokemonSelecionado.corBorda,
+              boxShadow: '1px 8px 20px rgba(0, 0, 0, 0.1)'
+            }">
+        {{ tipo }}
+      </span>
+    </div>
+
+    <!-- Imagem centralizada um pouco abaixo -->
+    <div class="imagem-modal">
+      <img :src="pokemonSelecionado.imagem" :alt="pokemonSelecionado.name"/>
+    </div>
 
     <div class="infos-modal">
       <div class="tabs">
-        <button :class="{ ativa: abaAtiva === 'sobre' }" @click="abaAtiva = 'sobre'" :style="{ borderBottomColor: abaAtiva === 'sobre' ? pokemonSelecionado?.cor : '' }" >Sobre</button>
-        <button :class="{ ativa: abaAtiva === 'stats' }" @click="abaAtiva = 'stats'" :style="{ borderBottomColor: abaAtiva === 'stats' ? pokemonSelecionado?.cor : '' }">Base Stats</button>
-        <button :class="{ ativa: abaAtiva === 'evolution' }" @click="abaAtiva = 'evolution'" :style="{ borderBottomColor: abaAtiva === 'evolution' ? pokemonSelecionado?.cor : '' }">Evoluções</button>
+        <button :class="{ ativa: abaAtiva === 'sobre' }" 
+                @click="abaAtiva = 'sobre'" 
+                :style="{ borderBottomColor: abaAtiva === 'sobre' ? pokemonSelecionado?.cor : '' }">Sobre</button>
+        <button :class="{ ativa: abaAtiva === 'stats' }" 
+                @click="abaAtiva = 'stats'" 
+                :style="{ borderBottomColor: abaAtiva === 'stats' ? pokemonSelecionado?.cor : '' }">Base Stats</button>
+        <button :class="{ ativa: abaAtiva === 'evolution' }" 
+                @click="abaAtiva = 'evolution'" 
+                :style="{ borderBottomColor: abaAtiva === 'evolution' ? pokemonSelecionado?.cor : '' }">Evoluções</button>
       </div>
 
       <!-- Conteúdo das abas -->
-      <div v-if="abaAtiva === 'sobre'" >
-        <p>Altura: {{ pokemonSelecionado.weight / 10 }} m</p>
-          <p><strong>Peso:</strong> {{ pokemonSelecionado.weight / 10 }} kg</p>
-            <p><strong>Tipos:</strong> {{ pokemonSelecionado.tipos.join(', ') }}</p>
+      <div class="about" v-if="abaAtiva === 'sobre'" >
+        <p><strong>Altura:</strong> {{ pokemonSelecionado.height / 10 }} m</p>
+        <p><strong>Peso:</strong> {{ pokemonSelecionado.weight / 10 }} kg</p>
+        <p><strong>Tipos:</strong> {{ pokemonSelecionado.tipos.join(', ') }}</p>
         <p><strong>Habilidades:</strong> {{ pokemonSelecionado.abilities.map(a => a.ability.name).join(', ') }}</p>
         <p><strong>Experiência Base:</strong> {{ pokemonSelecionado.base_experience }}</p>
         <p><strong>Descrição:</strong> {{ pokemonSelecionado.descricao }}</p> 
@@ -185,7 +210,8 @@ async function abrirModal(pokemon) {
       evolucoes,
       descricao,
       imagem: data.sprites.other['official-artwork'].front_default || data.sprites.front_default,
-      cor: pokemon.cor  // <- usa a cor que veio do card
+      cor: pokemon.cor,
+      corBorda: pokemon.corBorda  // <- usa a cor que veio do card
     }
 
     nextTick(() => {
@@ -313,6 +339,8 @@ h1 {
 .modal-content img {
   width: 250px;
   height: auto;
+  position: relative;
+  top: 7vh;
 }
 .logo {
     width: 40%;
@@ -356,23 +384,25 @@ h1 {
   border: none;
   padding: 10px 15px;
   cursor: pointer;
-  font-weight: bold;
+  font-weight: 300;
   color: #555;
   border-bottom: 1px solid transparent;
   transition: border-color 0.2s;
   border-radius: 0;
 }
 .tabs button.ativa {
+  font-weight: 400;
   border-bottom: 2px solid #333 ;
   color: #000;
 }
 .stat-item {
-  margin: 40px 0;
+  margin: 20px 0;
   list-style: none;
   display: flex;
   align-items: center;
   justify-content: flex-start;
   gap: 8px;
+  width: 100%;
 }
 .stat-name {
   display: inline-block;
@@ -381,18 +411,22 @@ h1 {
   font-weight: bold;
   text-align: left;
 }
+.nome-pokemon {
+  color: white;
+}
 .stat-value {
   width: 35px;
   text-align: left;
 }
 .progress-bar {
-  display: inline-block;
+  flex: 1;
   vertical-align: middle;
-  width: 220px;
-  height: 10px;
+  height: 12px;
   background: #eee;
   border-radius: 5px;
   overflow: hidden;
+  max-width: 55%;       /* opcional: limite em telas grandes */
+  min-width: 150px; 
 }
 .progress-fill {
   height: 100%;
@@ -411,6 +445,26 @@ h1 {
 .btn-carregar-mais:hover {
   background-color: #4fa3e0;
 }
+.tipos-modal {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 10px;
+}
+.tipos-modal .tipo {
+  border: 1px solid white;
+  padding: 4px 10px;
+  border-radius: 15px;
+  font-size: 14px;
+  text-transform: capitalize;
+  text-align: center;
+  color: white;
+}
+.about {
+  text-align: left;
+  padding-left: 40px;
+}
+
 @media screen and (min-width: 300px) {
   .pokedex-wrapper {
   max-width: 300px;
@@ -428,7 +482,7 @@ h1 {
     grid-template-columns: 1fr 1fr;
   }
 }
-@media screen and (min-width: 750px) {
+@media screen and (min-width: 850px) {
     .pokedex-wrapper {
   max-width: 950px;
   margin: -1rem auto;
@@ -448,5 +502,20 @@ h1 {
   .lista {
     grid-template-columns: 1fr 1fr 1fr 1fr;
   } 
+}
+@media screen and (min-width: 635px) {
+  .progress-bar {
+    max-width: 75%;
+  }
+}
+@media screen and (min-width: 935px) {
+  .progress-bar {
+    max-width: 75%;
+  }
+}
+@media screen and (min-width: 1200px) {
+  .progress-bar {
+    max-width: 85%;
+  }
 }
 </style>
