@@ -1,119 +1,34 @@
 <template>
-
-  <!-- <input type="text" v-model="busca" placeholder="Digite o nome de um Pokemon"/> -->
-  <!-- <hr> -->
   <div class="pokedex-wrapper">
-      <img class="logo" src="/public/pokedex.png">
-        <div class="filtro-tipos">
-          <span 
-            v-for="tipo in Object.keys(coresPorTipo)" 
-            :key="tipo"
-            class="tipo-icone"
-            :style="{ backgroundColor: coresPorTipo[tipo] }"
-            @click="tipoSelecionado = (tipoSelecionado === tipo ? null : tipo)"
-            :class="{ativo: tipoSelecionado === true}"
-          >
-            <img :src="iconesPorTipo[tipo]" :alt="tipo" class="icone-tipo" />
-          </span>
-        </div>
+    <img class="logo" src="/public/pokedex.png">
 
+    <!-- Filtro por tipos -->
+    <div class="filtro-tipos">
+      <span 
+        v-for="tipo in Object.keys(coresPorTipo)" 
+        :key="tipo"
+        class="tipo-icone"
+        :style="{ backgroundColor: coresPorTipo[tipo] }"
+        @click="tipoSelecionado = (tipoSelecionado === tipo ? null : tipo)"
+        :class="{ativo: tipoSelecionado === tipo}"
+      >
+        <img :src="iconesPorTipo[tipo]" :alt="tipo" class="icone-tipo" />
+      </span>
+    </div>
+
+    <!-- Lista de Pokémon -->
     <div class="lista">
       <PokemonCard
         v-for="pokemon in pokemonsFiltrados"
         :key="pokemon.name"
         :pokemon="pokemon"
-        @abrir-modal="abrirModal"
       />
     </div>
+
+    <!-- Botão carregar mais -->
     <button @click="carregarMais" class="btn-carregar-mais">Carregar Mais</button>
   </div>
-
-<div v-if="pokemonSelecionado" class="modal-overlay" @click.self="fecharModal">
-  <div class="modal-content" :class="{ aberto: modalAtivo }" :style="{ backgroundColor: pokemonSelecionado.cor }">
-    <span class="fechar" @click="fecharModal"><i class="fas fa-arrow-left"></i></span>
-
-    <!-- Nome do Pokémon -->
-    <h2 class="nome-pokemon">{{ pokemonSelecionado.name }}</h2>
-
-    <!-- Tipos abaixo do nome -->
-    <div class="tipos-modal">
-      <span v-for="tipo in pokemonSelecionado.tipos" 
-            :key="tipo"
-            class="tipo"
-            :style="{
-              backgroundColor: pokemonSelecionado.corBorda,
-              borderColor: pokemonSelecionado.corBorda,
-              boxShadow: '1px 8px 20px rgba(0, 0, 0, 0.1)'
-            }">
-        {{ tipo }}
-      </span>
-    </div>
-
-    <!-- Imagem centralizada um pouco abaixo -->
-    <div class="imagem-modal">
-      <img :src="pokemonSelecionado.imagem" :alt="pokemonSelecionado.name"/>
-    </div>
-
-    <div class="infos-modal">
-      <div class="tabs">
-        <button :class="{ ativa: abaAtiva === 'sobre' }" 
-                @click="abaAtiva = 'sobre'" 
-                :style="{ borderBottomColor: abaAtiva === 'sobre' ? pokemonSelecionado?.cor : '' }">Sobre</button>
-        <button :class="{ ativa: abaAtiva === 'stats' }" 
-                @click="abaAtiva = 'stats'" 
-                :style="{ borderBottomColor: abaAtiva === 'stats' ? pokemonSelecionado?.cor : '' }">Base Stats</button>
-        <button :class="{ ativa: abaAtiva === 'evolution' }" 
-                @click="abaAtiva = 'evolution'" 
-                :style="{ borderBottomColor: abaAtiva === 'evolution' ? pokemonSelecionado?.cor : '' }">Evoluções</button>
-      </div>
-
-      <div class="about" v-if="abaAtiva === 'sobre'" >
-        <div class="linha" >
-          <span class="titulo" :style="{ color: pokemonSelecionado.cor}">Altura:</span>
-          <span class="valor">{{ pokemonSelecionado.height / 10 }} m</span>
-        </div>
-        <div class="linha" >
-          <span class="titulo" :style="{ color: pokemonSelecionado.cor}">Peso:</span>
-          <span class="valor">{{ pokemonSelecionado.weight / 10 }} kg</span>
-        </div>
-        <div class="linha">
-          <span class="titulo" :style="{ color: pokemonSelecionado.cor}">Tipos:</span>
-          <span class="valor">{{ pokemonSelecionado.tipos.join(', ') }}</span>
-        </div>
-        <div class="linha">
-          <span class="titulo" :style="{ color: pokemonSelecionado.cor}">Habilidades:</span>
-          <span class="valor">{{ pokemonSelecionado.abilities.map(a => a.ability.name).join(', ') }}</span>
-        </div>
-      </div>
-
-
-
-      <div v-if="abaAtiva === 'stats'">
-        <ul>
-          <li v-for="s in pokemonSelecionado.stats" :key="s.stat.name" class="stat-item">
-            <span class="stat-name" :style=" { color: pokemonSelecionado.cor}"> {{ statAbreviaturas[s.stat.name] || s.stat.name }}: </span>
-            <span class="stat-value">{{ s.base_stat }} </span>
-            <div class="progress-bar">
-              <div class="progress-fill" :style="{ width: (s.base_stat / 255 * 100) + '%', backgroundColor: pokemonSelecionado.cor}"></div>
-            </div>
-          </li>
-        </ul>
-      </div>
-
-      <div v-if="abaAtiva === 'evolution'">
-        <ul>
-          <li v-for="e in pokemonSelecionado.evolucoes" :key="e">
-            {{ e }}
-          </li>
-        </ul>
-      </div>
-    </div>
-  </div>
-</div>
-
-
 </template>
-
 <script setup>
 import { onMounted, ref, computed, nextTick } from 'vue'
 import '@fortawesome/fontawesome-free/css/all.css'
@@ -335,44 +250,7 @@ body {
 h1 {
   text-align: left;
 }
-.modal-overlay {
-  position: fixed;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  background: rgba(0,0,0,0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  align-items: flex-end;
-  z-index: 1000;
-  overflow-y: auto;
-}
-.modal-content {
-  position: relative;
-  background: white;
-  max-height: 90vh;   /* até 90% da tela */
-  height: auto;       /* cresce conforme conteúdo */
-  min-height: 80vh;   /* garante que nunca fique muito pequeno */
-  width: 100%;
-  text-align: center;
-  transform: translateY(100%);
-  transition: transform 0.5s ease-out;
-  color: black;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
 
-
-.modal-overlay .modal-content.aberto {
-  transform: translateY(0);
-}
-.modal-content img {
-  width: 250px;
-  height: auto;
-  position: relative;
-  top: 7vh;
-}
 .logo {
     width: 40%;
   display: flex;
@@ -380,96 +258,8 @@ h1 {
   align-items: center;
   margin: 0px 0px 10px 29%;
 }
-.modal-content p, h2 {
-  text-transform: capitalize;
-  position: relative;
-  top: 10px;
-}
-.modal-content button {
-  align-items: flex-end;
-}
-.modal-content .fechar {
-  position: absolute;
-  top: 35px;
-  left: 20px;
-  cursor: pointer;
-  z-index: 10;
-}
-.modal-content .fechar:hover {
-  color: #82caff;
-}
 
-.infos-modal {
-  flex: 1;             /* ocupa o espaço que sobra */
-  background-color: white;
-  border-radius: 25px 25px 0 0;
-  display: flex;
-  flex-direction: column;
-  padding: 20px;
-  overflow-y: auto;   /* 👈 agora rola só essa parte */
-   color: black !important;
-}
 
-.tabs {
-  display: flex;
-  justify-content: space-around;
-  margin-top: 15px;
-  border-bottom: none;
-  padding-top: 30px;
-}
-.tabs button {
-  background: none;
-  border: none;
-  padding: 10px 15px;
-  cursor: pointer;
-  font-weight: 300;
-  color: #555;
-  border-bottom: 1px solid transparent;
-  transition: border-color 0.2s;
-  border-radius: 0;
-}
-.tabs button.ativa {
-  font-weight: 400;
-  border-bottom: 2px solid #333 ;
-  color: #000;
-}
-.stat-item {
-  margin: 20px 0;
-  list-style: none;
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  gap: 8px;
-  width: 100%;
-}
-.stat-name {
-  display: inline-block;
-  width: 45px;
-  text-transform: capitalize;
-  font-weight: bold;
-  text-align: left;
-}
-.nome-pokemon {
-  color: white;
-}
-.stat-value {
-  width: 35px;
-  text-align: left;
-}
-.progress-bar {
-  flex: 1;
-  vertical-align: middle;
-  height: 12px;
-  background: #eee;
-  border-radius: 5px;
-  overflow: hidden;
-  max-width: 55%;       /* opcional: limite em telas grandes */
-  min-width: 150px; 
-}
-.progress-fill {
-  height: 100%;
-  transition: width 0.3 ease;
-}
 .btn-carregar-mais {
   margin: 10px auto;
   display: block;
@@ -483,53 +273,8 @@ h1 {
 .btn-carregar-mais:hover {
   background-color: #4fa3e0;
 }
-.tipos-modal {
-  display: flex;
-  justify-content: center;
-  gap: 8px;
-  margin-top: 10px;
-  border-radius: 25px;
-}
-.tipos-modal .tipo {
-  border: 1px solid white;
-  padding: 4px 10px;
-  border-radius: 15px;
-  font-size: 14px;
-  text-transform: capitalize;
-  text-align: center;
-  color: white;
-}
 
-.about {
-  flex: 1;             /* ocupa todo o espaço disponível */
-  display: flex;
-  flex-direction: column;
-  gap: 25px;
-  padding-left: 40px;
-  overflow-y: auto;    /* se houver muito conteúdo, aparece scroll */
-      margin-top: 16px; 
-}
 
-.linha {
-  display: grid;
-  grid-template-columns: 100px auto; /* aumentei a largura da coluna do título */
-  align-items: start;
-  gap: 10px; /* 👈 espaço extra entre colunas */
-}
-
-.titulo {
-
-  text-align: left;
-  text-transform: uppercase;
-  font-weight: bold;
-}
-
-.valor {
-  text-align: left;
-    font-weight: 500;
-    grid-template-columns: 200px auto;
-    text-transform: capitalize;
-}
 
 .filtro-tipos {
   display: flex;
