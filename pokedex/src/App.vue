@@ -349,14 +349,18 @@ h1 {
 .modal-content {
   position: relative;
   background: white;
-  max-height: 100vh;
-  height: 75vh;
+  max-height: 100vh;   /* limite da tela */
+  height: 90vh;        /* ocupa quase tudo */
   width: 100%;
   text-align: center;
   transform: translateY(100%);
   transition: transform 0.5s ease-out;
 
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;   /* evita scroll duplo */
 }
+
 .modal-overlay .modal-content.aberto {
   transform: translateY(0);
 }
@@ -392,12 +396,13 @@ h1 {
   color: #82caff;
 }
 .infos-modal {
+  flex: 1;             /* ocupa o espaço que sobra */
   background-color: white;
-  height: 100%;        /* já está */
-  border-radius: 25px;
+  border-radius: 25px 25px 0 0;
   display: flex;
   flex-direction: column;
   padding: 20px;
+  overflow-y: auto;   /* 👈 agora rola só essa parte */
 }
 
 .tabs {
