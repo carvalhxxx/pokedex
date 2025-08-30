@@ -355,7 +355,7 @@ h1 {
   text-align: center;
   transform: translateY(100%);
   transition: transform 0.5s ease-out;
-
+  color: black; 
   display: flex;
   flex-direction: column;
   overflow: hidden;   /* evita scroll duplo */
@@ -403,6 +403,7 @@ h1 {
   flex-direction: column;
   padding: 20px;
   overflow-y: auto;   /* 👈 agora rola só essa parte */
+   color: black !important;
 }
 
 .tabs {
