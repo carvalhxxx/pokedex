@@ -350,17 +350,19 @@ h1 {
 .modal-content {
   position: relative;
   background: white;
-  max-height: 100vh;   /* limite da tela */
-  height: 90vh;        /* ocupa quase tudo */
+  max-height: 90vh;   /* até 90% da tela */
+  height: auto;       /* cresce conforme conteúdo */
+  min-height: 70vh;   /* garante que nunca fique muito pequeno */
   width: 100%;
   text-align: center;
   transform: translateY(100%);
   transition: transform 0.5s ease-out;
-  color: black; 
+  color: black;
   display: flex;
   flex-direction: column;
-  overflow: hidden;   /* evita scroll duplo */
+  overflow: hidden;
 }
+
 
 .modal-overlay .modal-content.aberto {
   transform: translateY(0);
@@ -604,7 +606,7 @@ h1 {
 }
 @media screen and (min-width: 635px) {
   .progress-bar {
-    max-width: 75%;
+    max-width: 85%;
   }
 }
 @media screen and (min-width: 935px) {
@@ -617,12 +619,12 @@ h1 {
     max-width: 85%;
   }
 }
-@media (max-width: 600px) {
+/* @media (max-width: 600px) {
   .modal-content {
     width: 95%;
     max-height: 90vh;
     padding: 15px;
   }
-}
+} */
 
 </style>
