@@ -352,7 +352,7 @@ h1 {
   background: white;
   max-height: 90vh;   /* até 90% da tela */
   height: auto;       /* cresce conforme conteúdo */
-  min-height: 70vh;   /* garante que nunca fique muito pequeno */
+  min-height: 100vh;   /* garante que nunca fique muito pequeno */
   width: 100%;
   text-align: center;
   transform: translateY(100%);
@@ -398,6 +398,7 @@ h1 {
 .modal-content .fechar:hover {
   color: #82caff;
 }
+
 .infos-modal {
   flex: 1;             /* ocupa o espaço que sobra */
   background-color: white;
