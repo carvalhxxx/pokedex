@@ -345,6 +345,7 @@ h1 {
   align-items: center;
   align-items: flex-end;
   z-index: 1000;
+  overflow-y: auto;
 }
 .modal-content {
   position: relative;
