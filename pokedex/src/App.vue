@@ -22,20 +22,19 @@
         v-for="pokemon in pokemonsFiltrados"
         :key="pokemon.name"
         :pokemon="pokemon"
-        @abrir-modal="abrirModal"
       />
     </div>
     <button @click="carregarMais" class="btn-carregar-mais">Carregar Mais</button>
   </div>
 
-<div v-if="pokemonSelecionado" class="modal-overlay" @click.self="fecharModal">
+<!-- <div v-if="pokemonSelecionado" class="modal-overlay" @click.self="fecharModal">
   <div class="modal-content" :class="{ aberto: modalAtivo }" :style="{ backgroundColor: pokemonSelecionado.cor }">
     <span class="fechar" @click="fecharModal"><i class="fas fa-arrow-left"></i></span>
 
-    <!-- Nome do Pokémon -->
+    Nome do Pokémon
     <h2 class="nome-pokemon">{{ pokemonSelecionado.name }}</h2>
 
-    <!-- Tipos abaixo do nome -->
+     Tipos abaixo do nome 
     <div class="tipos-modal">
       <span v-for="tipo in pokemonSelecionado.tipos" 
             :key="tipo"
@@ -49,7 +48,7 @@
       </span>
     </div>
 
-    <!-- Imagem centralizada um pouco abaixo -->
+    
     <div class="imagem-modal">
       <img :src="pokemonSelecionado.imagem" :alt="pokemonSelecionado.name"/>
     </div>
@@ -109,7 +108,7 @@
       </div>
     </div>
   </div>
-</div>
+</div> -->
 
 
 </template>
@@ -343,9 +342,8 @@ h1 {
   display: flex;
   justify-content: center;
   align-items: center;
-  align-items: flex-end;
   z-index: 1000;
-}
+} 
 .modal-content {
   position: relative;
   background: white;
