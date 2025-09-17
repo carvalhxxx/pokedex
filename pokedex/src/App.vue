@@ -530,8 +530,8 @@ h1 {
 }
 
 .tipo-icone {
-  width: 40px;
-  height: 40px;
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
   background: #f0f0f0; /* fundo neutro */
   display: flex;
@@ -543,8 +543,8 @@ h1 {
 }
 
 .tipo-icone img {
-  width: 24px;
-  height: 24px;
+  width: 12px;
+  height: 12px;
 }
 
 .tipo-icone:hover {
